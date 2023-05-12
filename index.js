@@ -5,7 +5,6 @@ require('dotenv').config()
 const express = require("express");
 const cors = require("cors");
 const PORT = process.env.PORT || 5000;
-const token = process.env.DISCORD_TOKEN;
 //express
 const app = express();
 //Cors
@@ -37,10 +36,12 @@ const puppeteer = require('puppeteer');
 const {getPickWithUrl} = require('./getPickOfUrl');
  
 const vgmUrl = 'https://winnersandwhiners.com/';
- app.get('/odds', async (req, res) => {
-     console.log('dans le odds')
+const oddsUrl = 'https://www.unibet.fr';
+
+ app.get('/pick-usa', async (req, res) => {
+     console.log('dans le pick')
      try {
-         const browser = await puppeteer.launch({executablePath: '/usr/bin/google-chrome',args: ['--no-sandbox', '--disable-setuid-sandbox']});
+         const browser = await puppeteer.launch();
          const page = await browser.newPage();
          await page.setDefaultNavigationTimeout(0);
          await page.goto(vgmUrl);
@@ -67,6 +68,44 @@ const vgmUrl = 'https://winnersandwhiners.com/';
          for (let i = 0; i < arrayLinkFinal.length; i++) {
 
              await getPickWithUrl(arrayLinkFinal[i]);
+         }
+     }
+     catch
+         (e)
+         {
+             console.log(e)
+         }
+     }
+ )
+
+ app.get('/all-odds', async (req, res) => {
+     console.log('dans le odds')
+     try {
+         const browser = await puppeteer.launch();
+         const page = await browser.newPage();
+         await page.setDefaultNavigationTimeout(0);
+         await page.goto(oddsUrl);
+
+         const selector = 'div.game-index-article-buttons > a'
+         await page.waitForSelector(selector)
+         const links = await page.$$eval(selector, am => am.filter(e => e.href).map(e => e.href))
+         const stringRef = "https://unibet.fr/";
+         let arrayLinkFinalOdd = [];
+
+         if (links != undefined && links != null && links.length > 0) {
+             for (let i = 0; i < links.length; i++) {
+                 if (links[i].includes(stringRef)) {
+                     arrayLinkFinalOdd.push(links[i]);
+                 }
+             }
+         }
+         console.log(arrayLinkFinalOdd)
+
+         await browser.close();
+
+         for (let i = 0; i < arrayLinkFinalOdd.length; i++) {
+
+             await getPickWithUrl(arrayLinkFinalOdd[i]);
          }
      }
      catch
