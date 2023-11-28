@@ -3,9 +3,11 @@ const app = Router();
 const vgmUrl = 'https://winnersandwhiners.com/';
 const puppeteer = require('puppeteer');
 const { getPickWithUrl } = require('./getPickOfUrl');
+const redis_url = process.env.REDIS_URL || '6379';
 
 const prediction = async (req, res) => {
     try {
+        return res.status(200).json({ message: redis_url });
         const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
         const page = await browser.newPage();
         await page.setDefaultNavigationTimeout(0);
