@@ -8,6 +8,7 @@ const vgmUrl = 'https://winnersandwhiners.com/';
 
 app.get('/odds', async (req, res) => {
     try {
+        return res.status(200).json({ message: 'Hello World' });
         const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
         const page = await browser.newPage();
         await page.setDefaultNavigationTimeout(0);
