@@ -2,7 +2,7 @@ const { createClient } = require("redis");
 const redis_url = process.env.REDIS_URL || '';
 const redis_password = process.env.REDIS_PASSWORD || '';
 
-const client = createClient({url:redis_url + ':6379', password: redis_password});
+const client = createClient({url:redis_url, password: redis_password});
 
 const getRedisJsonAsync = async (key) => {
     try {
