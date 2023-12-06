@@ -28,4 +28,16 @@ const setRedisJsonAsync = async (key, data) => {
     }
 }
 
-module.exports = { getRedisJsonAsync, setRedisJsonAsync };
+const getAllKeys = async () => {
+    try {
+        await client.connect();
+        const keys = await client.keys('*');
+        await client.quit();
+        return keys;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
+module.exports = { getRedisJsonAsync, setRedisJsonAsync, getAllKeys };
