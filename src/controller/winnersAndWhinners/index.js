@@ -7,8 +7,6 @@ const { getRedisJsonAsync, setRedisJsonAsync } = require('../../redis');
 
 const prediction = async (req, res) => {
     try {
-        const redis_test = await getRedisJsonAsync('testRedis');
-        return res.status(200).json({ message: "oooo useless" });
         const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
         const page = await browser.newPage();
         await page.setDefaultNavigationTimeout(0);
@@ -29,16 +27,20 @@ const prediction = async (req, res) => {
                 }
             }
         }
-        return res.status(200).json(arrayLinkFinal);
     
     
         await browser.close();
+
+        let arrayFinal = [];
     
         for (let i = 0; i < arrayLinkFinal.length; i++) {
     
-            await getPickWithUrl(arrayLinkFinal[i]);
+            const data = await getPickWithUrl(arrayLinkFinal[i]);
+            arrayFinal.push(data);
     
         }
+        return res.status(200).json(arrayFinal);
+
     } catch (error) {
         console.log(error);
         return res.status(500).send(error);
