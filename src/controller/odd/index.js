@@ -24,8 +24,8 @@ const saveOdds = async (req, res) => {
             let resultFinal = resultFinalTmp.textContentFinal;
             let objectFinal = {
                 key: result[i].href,
-                homeTeam: resultFinalTmp.textNameFinal[0],
-                awayTeam: resultFinalTmp.textNameFinal[1],
+                homeTeam: resultFinalTmp.textNameFinal[0] ? resultFinalTmp.textNameFinal[0] : "erreur",
+                awayTeam: resultFinalTmp.textNameFinal[1] ? resultFinalTmp.textNameFinal[1] : "erreur",
                 value: []
             };
 
@@ -80,7 +80,6 @@ const saveOdds = async (req, res) => {
             arrayDataPostman.push(objectFinal);
         }
         await setRedisJsonAsync(league, arrayDataPostman);
-        await client.disconnect();
         return res.status(200).send(arrayDataPostman)
     } catch (e) {
         console.log(e);
