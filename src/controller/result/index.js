@@ -1,12 +1,11 @@
 const Router = require("express").Router;
 const app = Router();
 const {getRedisJsonAsync, setRedisJsonAsync, getAllKeys} = require('../../redis');
-const {checkArray, returnLink, updateNameTeam, getPrincipalOdds, getOddsScore, twoGoals, getPickWithUrl, oddData} = require('../utils');
+const {checkArray, returnLink, updateNameTeam, getPrincipalOdds, getOddsScore, twoGoals, getPickWithUrl, oddData, getDateAndName} = require('../utils');
 
 
 const saveRedis = async (req, res) => {
     try {
-        await client.connect();
 
         const keys = await getAllKeys();
 
@@ -23,7 +22,8 @@ const saveRedis = async (req, res) => {
         }
         return res.status(200).send({success: true,data});
     } catch (e) {
-        return res.status(500).send({success: false, message: e});
+        console.log(e)
+        return res.status(500).send({success: false, message: e?.message ? e.message : e});
     }
 };
 
@@ -118,7 +118,6 @@ const getResult = async (req, res) => {
         let data = [];
         const url = returnLink(league);
         const dataArray = await getDateAndName(url, true);
-        console.log(dataArray)
         if (dataArray) {
             if (checkArray(dataArray.times, 19) && checkArray(dataArray.homeTeams, 19) &&
                 checkArray(dataArray.awayTeams, 19) && checkArray(dataArray.homeScores, 19) &&
