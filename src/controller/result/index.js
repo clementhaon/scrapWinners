@@ -1,7 +1,11 @@
 const Router = require("express").Router;
 const app = Router();
+const Sports = require('../../model').Sports;
+const Leagues = require('../../model').Leagues;
+const sportsData = require('../../model/sport/constants');
+const leaguesData = require('../../model/league/constants');
 const {getRedisJsonAsync, setRedisJsonAsync, getAllKeys} = require('../../redis');
-const {checkArray, returnLink, updateNameTeam, getPrincipalOdds, getOddsScore, twoGoals, getPickWithUrl, oddData} = require('../utils');
+const {checkArray, returnLink, updateNameTeam, getDateAndName} = require('../utils');
 
 
 const saveRedis = async (req, res) => {
@@ -27,89 +31,91 @@ const saveRedis = async (req, res) => {
     }
 };
 
-const getDate = async (req, res) => {
-    try {
-        if (!req.query || !req.query.league) return res.status(400).send({success: false});
-        const league = req.query.league;
-        //get league redis
+//TODO delete this function when all is okay
+
+// const getDate = async (req, res) => {
+//     try {
+//         if (!req.query || !req.query.league) return res.status(400).send({success: false});
+//         const league = req.query.league;
+//         //get league redis
         
-        const dataTmp = await getRedisJsonAsync(league);
-        let data = checkArray(dataTmp) ? dataTmp : [];
-        const url = returnLink(league);
-        const dataArray = await getDateAndName(url);
-        if (dataArray) {
-            if (checkArray(dataArray.times, 19) && checkArray(dataArray.homeTeams, 19) && checkArray(dataArray.awayTeams, 19) ) {
-                const datArrayTimes = dataArray.times;
-                let datArrayHomeTeams = dataArray.homeTeams;
-                let datArrayAwayTeams = dataArray.awayTeams;
+//         const dataTmp = await getRedisJsonAsync(league);
+//         let data = checkArray(dataTmp) ? dataTmp : [];
+//         const url = returnLink(league);
+//         const dataArray = await getDateAndName(url);
+//         if (dataArray) {
+//             if (checkArray(dataArray.times, 19) && checkArray(dataArray.homeTeams, 19) && checkArray(dataArray.awayTeams, 19) ) {
+//                 const datArrayTimes = dataArray.times;
+//                 let datArrayHomeTeams = dataArray.homeTeams;
+//                 let datArrayAwayTeams = dataArray.awayTeams;
 
-                for (let i = 0; i < datArrayTimes.length; i++) {
-                    let homeTeam = updateNameTeam(datArrayHomeTeams[i]);
-                    let awayTeam = updateNameTeam(datArrayAwayTeams[i]);
-                    let object = {
-                        times: datArrayTimes[i],
-                        homeTeam: homeTeam,
-                        awayTeam: awayTeam,
-                    }
-                    //check if object exist withe homeTeam and awayTeam in data
-                    let index = data.findIndex(x => x.homeTeam === homeTeam && x.awayTeam === awayTeam);
-                    //if index not exist push object in data
-                    if (index === -1) data.push(object)
-                }
-                await setRedisJsonAsync(league, data);
-            }
-        }
-        return res.status(200).send(data);
-    } catch (e) {
-        console.log(e)
-        return res.status(500).send({success: false, message: e});
-    }
-}
+//                 for (let i = 0; i < datArrayTimes.length; i++) {
+//                     let homeTeam = updateNameTeam(datArrayHomeTeams[i]);
+//                     let awayTeam = updateNameTeam(datArrayAwayTeams[i]);
+//                     let object = {
+//                         times: datArrayTimes[i],
+//                         homeTeam: homeTeam,
+//                         awayTeam: awayTeam,
+//                     }
+//                     //check if object exist withe homeTeam and awayTeam in data
+//                     let index = data.findIndex(x => x.homeTeam === homeTeam && x.awayTeam === awayTeam);
+//                     //if index not exist push object in data
+//                     if (index === -1) data.push(object)
+//                 }
+//                 await setRedisJsonAsync(league, data);
+//             }
+//         }
+//         return res.status(200).send(data);
+//     } catch (e) {
+//         console.log(e)
+//         return res.status(500).send({success: false, message: e});
+//     }
+// }
 
-const insertDate = async (req, res) => {
-    try {
-        if (!req.query || !req.query.league) return res.status(400).send({success: false});
-        const league = req.query.league;
+// const insertDate = async (req, res) => {
+//     try {
+//         if (!req.query || !req.query.league) return res.status(400).send({success: false});
+//         const league = req.query.league;
 
-        let data = [];
+//         let data = [];
         
-        let lengthOdds;
-        let arrayError = [];
-        const date = await getRedisJsonAsync(`${league} Date`);
-        const odds = await getRedisJsonAsync(league);
-        if (checkArray(date) && checkArray(odds)) {
-            lengthOdds = odds.length;
-            for (const odd of odds) {
-                if (odd.homeTeam && odd.awayTeam) {
-                    for (const dateElement of date) {
-                        let homeTeamDate;
-                        let awayTeamData;
-                        if (dateElement.homeTeam && dateElement.awayTeam) {
-                            homeTeamDate = updateNameTeam(dateElement.homeTeam);
-                            awayTeamData = updateNameTeam(dateElement.awayTeam);
-                            if (homeTeamDate === odd.homeTeam && awayTeamData === odd.awayTeam) {
-                                odd.time = dateElement.times
-                            }
-                        }
-                    }
-                    if (!odd.time) {
-                        arrayError.push(odd);
-                    }
-                }
-                data.push(odd);
-            }
+//         let lengthOdds;
+//         let arrayError = [];
+//         const date = await getRedisJsonAsync(`${league} Date`);
+//         const odds = await getRedisJsonAsync(league);
+//         if (checkArray(date) && checkArray(odds)) {
+//             lengthOdds = odds.length;
+//             for (const odd of odds) {
+//                 if (odd.homeTeam && odd.awayTeam) {
+//                     for (const dateElement of date) {
+//                         let homeTeamDate;
+//                         let awayTeamData;
+//                         if (dateElement.homeTeam && dateElement.awayTeam) {
+//                             homeTeamDate = updateNameTeam(dateElement.homeTeam);
+//                             awayTeamData = updateNameTeam(dateElement.awayTeam);
+//                             if (homeTeamDate === odd.homeTeam && awayTeamData === odd.awayTeam) {
+//                                 odd.time = dateElement.times
+//                             }
+//                         }
+//                     }
+//                     if (!odd.time) {
+//                         arrayError.push(odd);
+//                     }
+//                 }
+//                 data.push(odd);
+//             }
 
-            await setRedisJsonAsync(`${league} Final`, data);
+//             await setRedisJsonAsync(`${league} Final`, data);
 
-        }
+//         }
 
-        return res.status(200).send({data: data, lengthOdds, error: arrayError});
+//         return res.status(200).send({data: data, lengthOdds, error: arrayError});
 
-    } catch (e) {
-        console.log(e)
-        return res.status(500).send({success: false, message: e});
-    }
-}
+//     } catch (e) {
+//         console.log(e)
+//         return res.status(500).send({success: false, message: e});
+//     }
+// }
 
 const getResult = async (req, res) => {
     try {
@@ -233,6 +239,27 @@ const saveOddResult = async (req, res) => {
 
 };
 
+const insertDataInMysql = async (req, res) => {
+    try {
+        for (const datum of sportsData) {
+            const result = await Sports.findOrCreate({
+                where: {sport: datum},
+                defaults: {sport: datum}
+            });
+        }
+        for (const datum of leaguesData) {
+            const result = await Leagues.findOrCreate({
+                where: {league: datum.league, sportId: datum.sportId},
+                defaults: {league: datum.league, sportId: datum.sportId}
+            });
+        }
+        return res.status(200).send({success: true});
+    } catch (e) {
+        console.log(e)
+        return res.status(500).send({success: false});
+    }
+}
+
 
 app.get('/save-redis', saveRedis);
 app.get('/get-date', getDate);
@@ -240,5 +267,6 @@ app.get('/insert-date', insertDate);
 app.get('/result', getResult);
 app.get('/insert-result', insertResult);
 app.get('/save-odd-result', saveOddResult);
+app.get('/insert-data', insertDataInMysql);
 
 module.exports = app;
